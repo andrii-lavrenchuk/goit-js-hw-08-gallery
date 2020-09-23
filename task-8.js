@@ -1,4 +1,5 @@
 import galleryItems from './gallery-items.js';
+// querySelectors
 
 const galleryList = document.querySelector('.js-gallery');
 const modal = document.querySelector('.js-lightbox');
@@ -6,11 +7,13 @@ const bigImg = document.querySelector('.lightbox__image');
 const modalCloseBtn = document.querySelector(
   'button[data-action="close-lightbox"]',
 );
+const modalCloseEscBtn = document.querySelector('body');
+// EventListeners
 
-const galleryMarkup = createGalleryItems(galleryItems);
-galleryList.insertAdjacentHTML('beforeend', galleryMarkup);
+galleryList.insertAdjacentHTML('beforeend', createGalleryItems(galleryItems));
 galleryList.addEventListener('click', openModal);
-modalCloseBtn.addEventListener('click', closeModal);
+modalCloseBtn.addEventListener('click', OnCloseModalBtnClick);
+modalCloseEscBtn.addEventListener('keydown', onEscBtnClick);
 
 function createGalleryItems(galleryItems) {
   const markup = galleryItems
@@ -42,9 +45,15 @@ function openModal(evt) {
   bigImg.alt = evt.target.alt;
 }
 
-function closeModal(evt) {
+function OnCloseModalBtnClick() {
   console.log('Закриваю модалку');
   modal.classList.remove('is-open');
   bigImg.src = '';
   bigImg.alt = '';
+}
+
+function onEscBtnClick(evt) {
+  if (evt.code === 'Escape') {
+    modal.classList.remove('is-open');
+  }
 }
