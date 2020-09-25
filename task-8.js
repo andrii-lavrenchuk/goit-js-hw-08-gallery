@@ -1,20 +1,27 @@
 import galleryItems from './gallery-items.js';
+
 // querySelectors
+const refs = {
+  galleryList: document.querySelector('.js-gallery'),
+  modal: document.querySelector('.js-lightbox'),
+  bigImg: document.querySelector('.lightbox__image'),
+  modalCloseBtn: document.querySelector('button[data-action="close-lightbox"]'),
+  //   modalCloseEscBtn: document.querySelector('body'),
+  backDropEl: document.querySelector('.lightbox__overlay'),
+};
 
-const galleryList = document.querySelector('.js-gallery');
-const modal = document.querySelector('.js-lightbox');
-const bigImg = document.querySelector('.lightbox__image');
-const modalCloseBtn = document.querySelector(
-  'button[data-action="close-lightbox"]',
+// insertAdjacentHTML
+refs.galleryList.insertAdjacentHTML(
+  'beforeend',
+  createGalleryItems(galleryItems),
 );
-const modalCloseEscBtn = document.querySelector('body');
+
 // EventListeners
+refs.galleryList.addEventListener('click', openModal);
+refs.modalCloseBtn.addEventListener('click', OnCloseModalBtnClick);
+refs.backDropEl.addEventListener('click', onBackdropClick);
 
-galleryList.insertAdjacentHTML('beforeend', createGalleryItems(galleryItems));
-galleryList.addEventListener('click', openModal);
-modalCloseBtn.addEventListener('click', OnCloseModalBtnClick);
-modalCloseEscBtn.addEventListener('keydown', onEscBtnClick);
-
+// Functions
 function createGalleryItems(galleryItems) {
   const markup = galleryItems
     .map(({ original, description, preview }) => {
@@ -37,23 +44,84 @@ function createGalleryItems(galleryItems) {
 
 function openModal(evt) {
   evt.preventDefault();
-  if (evt.target.nodeName !== 'IMG') {
+  const IMG_NODE_NAME = 'IMG';
+  const isImg = evt.target.nodeName !== IMG_NODE_NAME;
+  if (isImg) {
     return;
   }
-  modal.classList.add('is-open');
-  bigImg.src = evt.target.dataset.source;
-  bigImg.alt = evt.target.alt;
+  refs.modal.classList.add('is-open');
+  window.addEventListener('keydown', onEscBtnClick);
+
+  window.addEventListener('keydown', onArrowRightButtonClick);
+  window.addEventListener('keydown', onArrowLeftButtonClick);
+  refs.bigImg.src = evt.target.dataset.source;
+  refs.bigImg.alt = evt.target.alt;
 }
 
 function OnCloseModalBtnClick() {
-  console.log('Закриваю модалку');
-  modal.classList.remove('is-open');
-  bigImg.src = '';
-  bigImg.alt = '';
+  //   console.log('Закриваю модалку');
+  refs.modal.classList.remove('is-open');
+  window.removeEventListener('keydown', onArrowLeftButtonClick);
+  window.removeEventListener('keydown', onArrowRightButtonClick);
+  window.addEventListener('keydown', onEscBtnClick);
+
+  refs.bigImg.src = '';
+  refs.bigImg.alt = '';
 }
 
 function onEscBtnClick(evt) {
-  if (evt.code === 'Escape') {
-    modal.classList.remove('is-open');
+  const ESC_BTN_CODE = 'Escape';
+  const isEscBtn = evt.code === ESC_BTN_CODE;
+  if (isEscBtn) {
+    console.log('Закриваю модалку');
+    refs.modal.classList.remove('is-open');
+    window.addEventListener('keydown', onEscBtnClick);
+
+    window.removeEventListener('keydown', onArrowLeftButtonClick);
+    window.removeEventListener('keydown', onArrowRightButtonClick);
+    window.removeEventListener('keydown', onEscBtnClick);
+
+    refs.bigImg.src = '';
+    refs.bigImg.alt = '';
   }
+}
+function onBackdropClick() {
+  refs.modal.classList.remove('is-open');
+  window.removeEventListener('keydown', onArrowLeftButtonClick);
+  window.removeEventListener('keydown', onArrowRightButtonClick);
+  window.addEventListener('keydown', onEscBtnClick);
+
+  refs.bigImg.src = '';
+  refs.bigImg.alt = '';
+  console.log('Клік в бекдроп');
+}
+
+function onArrowRightButtonClick(evt) {
+  const ARROW_RIGHT_BTN_CODE = 'ArrowRight';
+  const isArrowRightBtn = evt.code !== ARROW_RIGHT_BTN_CODE;
+  if (isArrowRightBtn) {
+    return;
+  }
+  const arrOfImg = galleryItems.map(({ original }) => original);
+  let currentImgIndex = arrOfImg.indexOf(refs.bigImg.src);
+
+  if (currentImgIndex + 1 > arrOfImg.length - 1) {
+    currentImgIndex = -1;
+  }
+
+  refs.bigImg.src = arrOfImg[currentImgIndex + 1];
+}
+
+function onArrowLeftButtonClick(evt) {
+  const ARROW_LEFT_BTN_CODE = 'ArrowLeft';
+  const isArrowLeftBtn = evt.code !== ARROW_LEFT_BTN_CODE;
+  if (isArrowLeftBtn) {
+    return;
+  }
+  const arrOfImg = galleryItems.map(({ original }) => original);
+  let currentImgIndex = arrOfImg.indexOf(refs.bigImg.src);
+  if (currentImgIndex === 0) {
+    currentImgIndex = arrOfImg.length;
+  }
+  refs.bigImg.src = arrOfImg[currentImgIndex - 1];
 }
